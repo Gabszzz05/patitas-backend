@@ -5,13 +5,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import pe.edu.cibertec.patitas_backend.dto.LogOutResponseDTO;
 import pe.edu.cibertec.patitas_backend.dto.LoginRequestDTO;
 import pe.edu.cibertec.patitas_backend.dto.LoginResponseDTO;
 import pe.edu.cibertec.patitas_backend.service.AutenticacionService;
+import pe.edu.cibertec.patitas_backend.session.UserActual;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.time.Duration;
 import java.util.Arrays;
 
 @RestController//Permitira hacer e llamado como un servicio
@@ -32,14 +32,41 @@ public class AutenticacionController {
             System.out.println("Resultado: " + Arrays.toString(datosUsuario));
             //
             if(datosUsuario == null){
-                return new LoginResponseDTO("01", "ERROR: Usuario no encontrado", "", "");
+                return new LoginResponseDTO("01", "ERROR: Usuario no encontrado", "", "", "", "");
             }
-            return new LoginResponseDTO("00", "", datosUsuario[0], datosUsuario[1]);
+
+            //Almacenar datos
+            UserActual.setUserData(datosUsuario[2], datosUsuario[3]);
+
+            return new LoginResponseDTO("00", "", datosUsuario[0], datosUsuario[1], datosUsuario[2], datosUsuario[3]);
             //Agregamos el InterruptedException
             // | InterruptedException
         } catch (IOException e) {
-            return new LoginResponseDTO("99", "ERROR: Ocurrio un problema", "", "");
+            return new LoginResponseDTO("99", "ERROR: Ocurrio un problema", "", "", "", "");
         }
     }
 
+    //Cierre de Sesion
+    @PostMapping("/logout")
+    public LogOutResponseDTO logout(){
+
+        String tipoDocumento = UserActual.getTipoDocumento();
+        String numeroDocumento = UserActual.getNumeroDocumento();
+
+        System.out.println("Tipo Documento :" + tipoDocumento);
+        System.out.println("Numero Documento" + numeroDocumento);
+
+        //Verificar
+        if(tipoDocumento != null && numeroDocumento != null){
+            try {
+                autenticacionService.cierreSesion(tipoDocumento, numeroDocumento);
+                UserActual.clear();
+                return new LogOutResponseDTO("00", "Cierre de Sesion correcto");
+            }catch (IOException e){
+                return new LogOutResponseDTO("02", "ERROR: Cierre de Sesion incorrecto" + e.getMessage());
+            }
+        }else {
+            return new LogOutResponseDTO("99", "No hay sesion activa");
+        }
+    }
 }
