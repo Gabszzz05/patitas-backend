@@ -12,6 +12,7 @@ import pe.edu.cibertec.patitas_backend.service.AutenticacionService;
 import pe.edu.cibertec.patitas_backend.session.UserActual;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 
 @RestController//Permitira hacer e llamado como un servicio
@@ -25,11 +26,11 @@ public class AutenticacionController {
     public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO){
 
         try {
-            //Agregamos esto para comprobar el tiempo que se le asigno al front para que tenga una respuesta
-            //Thread.sleep(Duration.ofSeconds(10));
             String[] datosUsuario = autenticacionService.validarUsuario(loginRequestDTO);
             //Imprimimos el array(No necesario)
             System.out.println("Resultado: " + Arrays.toString(datosUsuario));
+
+            //Thread.sleep(Duration.ofSeconds(2000));
             //
             if(datosUsuario == null){
                 return new LoginResponseDTO("01", "ERROR: Usuario no encontrado", "", "", "", "");
@@ -43,7 +44,9 @@ public class AutenticacionController {
             // | InterruptedException
         } catch (IOException e) {
             return new LoginResponseDTO("99", "ERROR: Ocurrio un problema", "", "", "", "");
-        }
+        }/* catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }*/
     }
 
     //Cierre de Sesion
